@@ -50,7 +50,15 @@ def connect_to_db():
 
 # Left column elements
 def get_elements():
-    if current_user == "Space Systems":
+    if current_user == "Admin":
+        return [
+            {"name": "Manage Company", "access": 2},
+            {"name": "Manage Rocket Motors", "access": 1},
+            {"name": "Manage and Order Fuel", "access": 1},
+            {"name": "Invoices", "access": 0},
+            {"name": "Register Company", "access": 2},
+        ]
+    elif current_user == "Space Systems":
         return [
             {"name": "Manage Company", "access": 2},
             {"name": "Manage Rocket Motors", "access": 1},
@@ -59,9 +67,7 @@ def get_elements():
             {"name": "Register Company", "access": 2},
         ]
     else:
-        return [
-            {"name": "Invoices", "access": 0},
-        ]
+        return []
 
 class MainApp:
     def __init__(self, root):
@@ -83,11 +89,8 @@ class MainApp:
         self.root.grid_columnconfigure(2, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
 
-        # Populate left column
-        self.populate_left()
-
         # Placeholder for middle content
-        self.middle_label = tk.Label(self.middle_frame, text="Select an option from the left panel.", font=("Arial", 14))
+        self.middle_label = tk.Label(self.middle_frame, text="Please login to access features.", font=("Arial", 14))
         self.middle_label.pack(expand=True)
 
         # Right column connect functionality
@@ -261,12 +264,19 @@ class MainApp:
             return
 
         try:
+            if email == "spacesystems@agh.edu.pl":
+                current_user = "Admin"
+                self.populate_left()
+                self.status_label.config(text=f"Zalogowano jako {current_user}", bg="green")
+                return
+
             cursor = self.db_connection.cursor()
             cursor.execute("SELECT name FROM facility.firmy WHERE mail = %s", (email,))
             result = cursor.fetchone()
 
             if result:
                 current_user = result[0]
+                self.populate_left()
                 self.status_label.config(text=f"Zalogowano jako {current_user}", bg="green")
             else:
                 self.status_label.config(text="Invalid email", bg="red")
